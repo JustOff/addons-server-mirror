@@ -19,6 +19,10 @@ def download(addon):
             os.path.join(directories['files'], str(file_obj['id'])),
         )
 
+        if os.path.exists(target):
+            log.info('{}: Skipping download'.format(addon['id']))
+            continue
+
         res = requests.get(url)
         res.raise_for_status()
 
@@ -30,8 +34,10 @@ def download(addon):
 
 
 def downloads(addons):
-    for addon in addons:
-        download(addon)
+    for k, addon in enumerate(addons):
+        # Only download 1 in 100.
+        if not k % 100:
+            download(addon)
 
 
 if __name__=='__main__':

@@ -7,7 +7,7 @@ import shutil
 import sys
 import time
 
-from utils import log, server, directory
+from utils import log, server, get_directories, get_files
 
 
 def file_hash(file):
@@ -40,7 +40,7 @@ def serialize_addon_result(result):
 
 
 def fetch(url=None):
-    url = url or server + '/api/v3/addons/search/?sort=created'
+    url = url or server + '/api/v3/addons/search/?sort=created&type=extension'
     log.info('Fetching: {}'.format(url))
     res = requests.get(url)
     res.raise_for_status()
