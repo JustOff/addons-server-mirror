@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import time
 
 server = os.getenv('AMO_SERVER', 'https://addons.mozilla.org')
 directory = '../data'
