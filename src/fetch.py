@@ -53,7 +53,8 @@ def fetch(url=None):
         compat = server + '/api/v3/addons/addon/{}/feature_compatibility/'.format(addon['id'])
         log.info('Fetching: {}'.format(compat))
         res = requests.get(compat)
-        res.raise_for_status()
+        if res.status_code == 404:
+            continue
         serialize_addon_result(addon['id'], res.json(), type='compat')
 
     if res_json['next']:
