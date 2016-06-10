@@ -22,11 +22,10 @@ def json_hash(json_obj):
     return hsh.hexdigest()
 
 
-def serialize_addon_result(result):
-    addon_id = result['id']
+def serialize_addon_result(addon_id, result, type='root'):
     directories = get_directories(addon_id)
     files = get_files(addon_id)
-    target_file = files['root']
+    target_file = files[type]
     if os.path.exists(target_file):
         if file_hash(target_file) == json_hash(result):
             log.info('{}: No need to update, hashes match.'.format(addon_id))
@@ -35,7 +34,7 @@ def serialize_addon_result(result):
             shutil.move(target_file, files['backup'])
             json.dump(result, open(target_file, 'w'))
     else:
-        log.info('{}: Writing addons.json.'.format(addon_id))
+        log.info('{}: Writing json for {}'.format(addon_id, type))
         json.dump(result, open(target_file, 'w'))
 
 
@@ -47,7 +46,13 @@ def fetch(url=None):
 
     res_json = res.json()
     for addon in res_json['results']:
-        serialize_addon_result(addon)
+        serialize_addon_result(addon['id'], addon)
+
+        compat = server + '/api/v3/addons/addon/{}/feature_compatibility/'.format(addon['id'])
+        log.info('Fetching: {}'.format(compat))
+        res = requests.get(compat)
+        res.raise_for_status()
+        serialize_addon_result(addon['id'], res.json(), type='compat')
 
     if res_json['next']:
         fetch(res_json['next'])

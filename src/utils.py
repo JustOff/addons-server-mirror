@@ -32,6 +32,7 @@ def get_files(addon_id):
     directories = get_directories(addon_id)
     files = {
         'root': os.path.join(directories['root'], 'addon.json'),
+        'compat': os.path.join(directories['root'], 'compat.json'),
         'backup': os.path.join(
             directories['changes'],
             'addon.{}.json'.format(str(time.time())))
