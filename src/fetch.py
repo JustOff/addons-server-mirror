@@ -9,6 +9,8 @@ import time
 
 from utils import log, server, get_directories, get_files
 
+import sys
+sys.setrecursionlimit(200000)
 
 def file_hash(file):
     hsh = hashlib.md5()
