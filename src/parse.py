@@ -1,11 +1,30 @@
 import json
 import os
 import tempfile
+import re
 import zipfile
 
 from functools import partial
 
 from utils import log, directory
+
+count = {}
+regex = re.compile('(chrome|browser)\.(\w+)\.(\w+)')
+
+
+def find(filename):
+    data = open(filename, 'rb').read()
+    if 'chrome.' not in data:
+        return
+
+    while data:
+        match = regex.search(data)
+        if match:
+            count.setdefault(match.group(), 0)
+            count[match.group()] += 1
+            data = data[match.end():]
+        else:
+            break
 
 
 def parse(callback, file_type='addon.json'):
@@ -13,13 +32,14 @@ def parse(callback, file_type='addon.json'):
     assert callback
     callback = parsers[callback]
     for root, dir_, filenames in os.walk(directory):
-
+	data = {}
         for filename in filenames:
             path = os.path.join(root, filename)
-            if filename == file_type:
-                data = json.load(open(path, 'r'))
-                if callback(data):
-                    results.append([data, path])
+            if filename in ['addon.json', 'compat.json']:
+                data[filename.split('.')[0]] = json.load(open(path, 'r'))
+
+        if data and callback(data):
+            results.append(data)
 
     return results
 
@@ -43,11 +63,11 @@ def parse_xpi(callback):
 
 
 def is_type(type, data):
-    return data['type'] == type
+    return data.get('addon', {}).get('type') == type
 
 
 def is_compat(type, data):
-    return data['e10s'] == type
+    return data.get('compat', {}).get('e10s') == type
 
 
 def has_package_json(zippy):
@@ -60,17 +80,21 @@ def has_package_json(zippy):
     return os.path.join(path, 'package.json')
 
 
+def webextension_apis(zippy):
+    path = tempfile.mkdtemp()
+    zippy.extractall(path)
+
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith('.js'):
+                full = os.path.join(root, file)
+                print 'Examining ', full
+                find(full)
+
+
 parsers = {
     'is_extension': partial(is_type, 'extension'),
     'is_webextension': partial(is_compat, 'compatible-webextension'),
-    'has_package_json': partial(has_package_json)
+    'has_package_json': partial(has_package_json),
+    'webextension_apis': partial(webextension_apis)
 }
-
-
-if __name__=='__main__':
-    # Some examples
-    #print len(parse('is_extension'))
-    #for filename in parse_xpi('has_package_json'):
-    #    print open(filename, 'r').read()
-
-    #print parse('is_webextension', 'compat.json')
