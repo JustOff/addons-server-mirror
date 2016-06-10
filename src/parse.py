@@ -8,7 +8,7 @@ from functools import partial
 from utils import log, directory
 
 
-def parse(callback):
+def parse(callback, file_type='addon.json'):
     results = []
     assert callback
     callback = parsers[callback]
@@ -16,10 +16,10 @@ def parse(callback):
 
         for filename in filenames:
             path = os.path.join(root, filename)
-            if filename == 'addon.json':
+            if filename == file_type:
                 data = json.load(open(path, 'r'))
                 if callback(data):
-                    results.append(data)
+                    results.append([data, path])
 
     return results
 
@@ -46,6 +46,10 @@ def is_type(type, data):
     return data['type'] == type
 
 
+def is_compat(type, data):
+    return data['e10s'] == type
+
+
 def has_package_json(zippy):
     path = tempfile.mkdtemp()
     try:
@@ -58,11 +62,15 @@ def has_package_json(zippy):
 
 parsers = {
     'is_extension': partial(is_type, 'extension'),
+    'is_webextension': partial(is_compat, 'compatible-webextension'),
     'has_package_json': partial(has_package_json)
 }
 
 
 if __name__=='__main__':
-    print len(parse('is_extension'))
-    for filename in parse_xpi('has_package_json'):
-        print open(filename, 'r').read()
+    # Some examples
+    #print len(parse('is_extension'))
+    #for filename in parse_xpi('has_package_json'):
+    #    print open(filename, 'r').read()
+
+    #print parse('is_webextension', 'compat.json')
