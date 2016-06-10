@@ -12,19 +12,7 @@ count = {}
 regex = re.compile('(chrome|browser)\.(\w+)\.(\w+)')
 
 
-def find(filename):
-    data = open(filename, 'rb').read()
-    if 'chrome.' not in data:
-        return
 
-    while data:
-        match = regex.search(data)
-        if match:
-            count.setdefault(match.group(), 0)
-            count[match.group()] += 1
-            data = data[match.end():]
-        else:
-            break
 
 
 def parse(callback, file_type='addon.json'):
@@ -84,12 +72,33 @@ def webextension_apis(zippy):
     path = tempfile.mkdtemp()
     zippy.extractall(path)
 
+    count = {}
+
+    def find(filename):
+        data = open(filename, 'rb').read()
+
+        while data:
+            match = regex.search(data)
+            if match:
+                count.setdefault(match.group(), 0)
+                count[match.group()] += 1
+                data = data[match.end():]
+            else:
+                break
+
     for root, dirs, files in os.walk(path):
         for file in files:
             if file.endswith('.js'):
                 full = os.path.join(root, file)
                 print 'Examining ', full
                 find(full)
+
+    for k, v in count.items():
+        global_counter.setdefault(k, 0)
+        global_counter[k] += 1
+
+
+global_counter = {}
 
 
 parsers = {

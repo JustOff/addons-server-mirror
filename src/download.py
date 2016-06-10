@@ -24,7 +24,11 @@ def download(addon):
             continue
 
         res = requests.get(url)
-        res.raise_for_status()
+        if res.status_code == 404:
+            log.warning('{}: got a 404'.format(addon['id']))
+            continue
+        else:
+            res.raise_for_status()
 
         with open(target, 'wb') as filehandle:
             for chunk in res.iter_content(10000):
