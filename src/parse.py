@@ -12,15 +12,15 @@ count = {}
 regex = re.compile('(chrome|browser)\.(\w+)\.(\w+)')
 
 
+def noop_callback(data):
+    return data
 
 
-
-def parse(callback, file_type='addon.json'):
+def parse(callback=None, file_type='addon.json'):
     results = []
-    assert callback
-    callback = parsers[callback]
+    callback = parsers.get(callback, parsers['noop_callback'])
     for root, dir_, filenames in os.walk(directory):
-	data = {}
+        data = {}
         for filename in filenames:
             path = os.path.join(root, filename)
             if filename in ['addon.json', 'compat.json']:
@@ -32,10 +32,9 @@ def parse(callback, file_type='addon.json'):
     return results
 
 
-def parse_xpi(callback):
+def parse_xpi(callback=None):
     results = []
-    assert callback
-    callback = parsers[callback]
+    callback = parsers.get(callback, parsers['noop_callback'])
     for root, dir_, filenames in os.walk(directory):
 
         files_path = os.path.join(root, 'files')
@@ -102,6 +101,7 @@ global_counter = {}
 
 
 parsers = {
+    'noop_callback': partial(noop_callback),
     'is_extension': partial(is_type, 'extension'),
     'is_webextension': partial(is_compat, 'compatible-webextension'),
     'has_package_json': partial(has_package_json),
