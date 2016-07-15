@@ -7,7 +7,8 @@ def mpc_list():
     compat_count = {'undefined': []}
     for data in parsed:
         compat = data.get('compat', {}).get('e10s', 'undefined')
-        compat_count[compat].append(data)
+        compat_count.setdefault(compat, [])
+        compat_count[compat].append(compat)
 
     for k, v in compat_count.items():
         print '%s: %s' % (k, len(v))
