@@ -33,17 +33,18 @@ def addons_for_arewe10syet():
         if addon['guid'] in IGNORE:
             continue
 
-        if addon['average_daily_users'] < 2000:
+        users = addon.get('average_daily_users', 0)
+        if users < 2000:
             continue
 
         output.append({
-            'guid': addon.guid,
+            'guid': addon['guid'],
             'testing': [],
             'bugs': [],
-            'users': addon['average_daily_users']
+            'users':users
         })
 
-    json.dumps(output, indent=2)
+    print json.dumps(output, indent=2)
 
 
 def sdk_list():
