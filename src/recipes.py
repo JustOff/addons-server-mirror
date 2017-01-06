@@ -60,6 +60,17 @@ def sdk_list():
             )
 
 
+def list_webextensions_urls():
+    parsed = parse()
+    for data in parsed:
+        compat = data.get('compat', {}).get('e10s', 'undefined')
+        if compat == 'compatible-webextension':
+            try:
+                print data['addon']['current_version']['files'][0]['url']
+            except (KeyError, IndexError):
+                pass
+
+
 if __name__ == '__main__':
     recipe = sys.argv[1]
     if recipe not in locals():
