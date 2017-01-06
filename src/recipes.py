@@ -54,9 +54,15 @@ def sdk_list():
         compat = data.get('compat', {}).get('e10s', 'undefined')
         if compat == 'compatible':
             addon = data['addon']
-            print '{},{}'.format(
+            files = None
+            try:
+                files = addon['current_version']['files'][0]['url']
+            except (KeyError, IndexError):
+                pass
+            print '{},{},{}'.format(
                 addon['guid'],
-                addon.get('average_daily_users', 0)
+                addon.get('average_daily_users', 0),
+                files
             )
 
 
